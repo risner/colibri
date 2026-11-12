@@ -146,6 +146,8 @@ static void hw_probe(char *cpu, size_t cn, int *cores, double *ram_total, double
       if(host_statistics64(mach_host_self(),HOST_VM_INFO64,(host_info64_t)&vs,&nc)==KERN_SUCCESS)
           /* macOS analogue of Linux MemAvailable: free + inactive + purgeable */
           *ram_avail=(double)(vs.free_count+vs.inactive_count+vs.purgeable_count)*(double)pgsz/1e9; }
+#elif defined(__FreeBSD__)
+    compat_meminfo_gb(ram_total,ram_avail);   /* no /proc/meminfo on FreeBSD: the sysctl branch there */
 #else
     FILE *mi=fopen("/proc/meminfo","r");
     if(mi){ char ln[256]; double mt=0,ma=0;
