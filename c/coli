@@ -3611,10 +3611,12 @@ def _stop_proc_table(port):
     # (macOS), an unmounted one (FreeBSD has the directory, empty, unless procfs is
     # mounted) or one without `comm` (FreeBSD's own procfs): `ps` then. -ww, or ps
     # cuts each line at the terminal's width when any of its descriptors is a tty.
+    # One -o per column: FreeBSD's ps takes everything after a `=` as that column's
+    # header, so `pid=,comm=,command=` there is the pid alone.
     if table: return table
     try:
-        out=subprocess.run(["ps","-Awwo","pid=,comm=,command="],capture_output=True,text=True,
-                           timeout=10).stdout
+        out=subprocess.run(["ps","-Aww","-o","pid=","-o","comm=","-o","command="],
+                           capture_output=True,text=True,timeout=10).stdout
     except (OSError,subprocess.SubprocessError):
         return []
     table=[]
