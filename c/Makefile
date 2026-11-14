@@ -15,6 +15,7 @@ MINGW  := $(findstring mingw,$(TRIPLET))
 CYGWIN := $(findstring cygwin,$(TRIPLET))
 DARWIN := $(findstring darwin,$(TRIPLET))
 LINUX  := $(findstring linux,$(TRIPLET))
+FREEBSD := $(findstring freebsd,$(TRIPLET))
 IS_WIN := $(MINGW)$(CYGWIN)
 
 # A gcc that targets the MSYS or Cygwin runtime (MSYS2's "MSYS" shell, or its plain
@@ -47,6 +48,7 @@ ifeq ($(IS_WIN),)
 UNAME_S := $(shell uname -s)
 UNAME_M := $(shell uname -m)
 DARWIN  := $(findstring Darwin,$(UNAME_S))
+FREEBSD := $(findstring FreeBSD,$(UNAME_S))
 endif
 endif
 
@@ -217,7 +219,11 @@ endif
 EXE     =
 else
 # --- Linux / *BSD x86-64 (percorso originale, invariato) ---
-CC      = gcc
+# FreeBSD: clang, the base system's compiler, whose -fopenmp links the base system's
+# libomp. gcc is a package there, and its libgomp has no thread affinity on FreeBSD
+# ("libgomp: Affinity not supported on this configuration") and decodes slower.
+# CC=gcc on the command line still builds with gcc.
+CC      = $(if $(FREEBSD),clang,gcc)
 # ARCH=native -> ottimizzato per QUESTA macchina (default, piu' veloce).
 # ARCH=x86-64-v3 -> binario PORTABILE su qualsiasi x86-64 moderno con AVX2 (per distribuire).
 # ARCH=x86-64 -> massima compatibilita' (niente AVX2: usa il path scalare di fallback).
